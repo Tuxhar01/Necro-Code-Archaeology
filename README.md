@@ -1,247 +1,408 @@
-# 🏺 Necro - AI-Powered Code Archaeologist
+# 🏺 Necro — AI-Powered Code Archaeologist
 
-> *Unearth the truth about your legacy code with IBM Bob 2.0*
+> **Find dead code. Detect hidden dependencies. Preserve what matters.**
 
-[![IBM Bob 2.0 Hackathon](https://img.shields.io/badge/IBM%20Bob%202.0-Hackathon-blue)](https://ibm.com/bob)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Necro is a code-archaeology tool for understanding legacy codebases before someone deletes the wrong thing.
 
----
+It analyzes suspicious or forgotten functions and classifies them into actionable categories:
 
-## The Problem
+- 🗑️ **Safe to Delete**
+- ⚠️ **Secretly Load-Bearing**
+- 📚 **Undocumented but Valuable**
+- ✓ **Normal — No Action**
 
-Every codebase accumulates **untouchable code** — modules nobody dares touch because:
-- 📝 No documentation
-- 🧪 No tests  
-- 👻 Written by someone long gone
-- ❓ Unclear if it's actually used
-
-This creates two costly failure modes:
-
-1. **Fear-driven bloat:** Teams keep dead code indefinitely because no one can prove it's safe to delete
-2. **Silent breakage:** Teams delete "obviously dead" code that's secretly load-bearing and break production
-
-Static analysis tools miss indirect usage (config-driven dispatch, reflection, string-built routes). **This requires reasoning across the whole codebase** — exactly what Bob 2.0 is built for.
+The project demonstrates how **IBM Bob 2.0's repository-level reasoning** can be applied to a practical software-engineering problem: determining whether seemingly unused legacy code is actually safe to remove.
 
 ---
 
-## The Solution
+## 🚀 Live Demo
 
-**Necro** scans your legacy codebase and uses IBM Bob 2.0's full-repository reasoning to tell you — **with evidence** — which code is:
+**Dashboard:**  
+https://necro-code-archaeology.onrender.com
 
-- ✅ **Safe to Delete** → Auto-generates deletion PR
-- ⚠️ **Secretly Load-Bearing** → Auto-generates docs explaining why it's critical
-- 📚 **Undocumented but Valuable** → Auto-generates comprehensive documentation
-- ✔️ **Normal / No Action** → Proves the system doesn't flag everything
+**Source Code:**  
+https://github.com/Tuxhar01/Necro-Code-Archaeology
+
+The live application provides two analysis modes:
+
+### ✓ Bob 2.0 Verified Demo
+
+A controlled five-module repository whose classifications and evidence were produced through the project's Bob 2.0 analysis workflow.
+
+### ⚠ Static Repository Inspection
+
+Upload your own repository as a ZIP and inspect it using Necro's local static-analysis pipeline.
+
+> **Important:** Uploaded repositories are currently analyzed using static inspection. They are **not analyzed by IBM Bob 2.0** and are explicitly labeled as such in the dashboard.
 
 ---
 
-## Demo
+# 🎯 The Problem
 
-### Before: The Mystery Module
+Legacy codebases accumulate functions and modules that nobody wants to touch.
 
-```python
-# demo_repo/src/analytics.py
+They may be:
+
+- undocumented
+- poorly tested
+- written years ago
+- disconnected from the current architecture
+- apparently unused
+- referenced only through configuration or dynamic dispatch
+
+This creates two opposing risks.
+
+### 1. Fear-driven technical debt
+
+Teams keep obsolete code because nobody can confidently prove that it is safe to remove.
+
+### 2. Accidental breakage
+
+A developer sees apparently unused code, deletes it, and discovers later that production depended on it through an indirect execution path.
+
+Traditional text search can miss patterns such as:
+
+- configuration-driven handlers
+- string-based dispatch
+- dynamic imports
+- reflection
+- runtime references
+
+Necro is designed around this problem.
+
+---
+
+# 💡 The Idea
+
+Instead of asking:
+
+> "Can I find an import for this function?"
+
+Necro asks:
+
+> **"What role does this code actually play in the repository?"**
+
+For each suspicious module, Necro combines repository evidence and reasoning to produce:
+
+1. a classification
+2. supporting evidence
+3. reasoning
+4. confidence
+5. an actionable artifact when available
+
+The result is not simply a list of unused functions.
+
+It is an **evidence-backed code archaeology report**.
+
+---
+
+# 🔍 Classification Model
+
+| Verdict | Meaning |
+|---|---|
+| 🗑️ **Safe to Delete** | No meaningful references were found in the analyzed repository |
+| ⚠️ **Secretly Load-Bearing** | The code appears unused directly but is connected through indirect/dynamic usage |
+| 📚 **Undocumented but Valuable** | The code is actively used but lacks adequate documentation |
+| ✓ **Normal — No Action** | The code is used and sufficiently documented |
+
+The dashboard exposes the evidence behind each classification rather than presenting only a label.
+
+---
+
+# 🧠 IBM Bob 2.0
+
+The original Necro demonstration uses **IBM Bob 2.0's repository-level reasoning workflow** to investigate the relationship between apparently isolated code and the rest of the repository.
+
+This is particularly important for the **Secretly Load-Bearing** case.
+
+For example, the demo contains a function that does not have obvious direct imports but is referenced through a routing/dispatch mechanism.
+
+A simple search can make it look dead.
+
+Repository-level reasoning can reveal the larger execution path.
+
+---
+
+# 🏺 The Verified Demo
+
+Necro includes a deliberately constructed five-module repository designed to test different forms of legacy-code ambiguity.
+
+| Case | Expected Verdict | Purpose |
+|---|---|---|
+| `calculate_legacy_metrics` | Safe to Delete | Genuinely unused code |
+| `format_old_date` | Safe to Delete | Another dead legacy function |
+| `track_user_event` | Secretly Load-Bearing | Indirect/string-based dispatch |
+| `validate_input` | Undocumented but Valuable | Used but poorly documented |
+| `process_request` | Normal — No Action | Control case |
+
+### Demo summary
+
+```text
+Modules Analyzed: 5
+
+Safe to Delete:             2
+Secretly Load-Bearing:      1
+Undocumented but Valuable:  1
+Normal — No Action:         1
+
+The control case is intentional: Necro should not simply label everything as suspicious.
+
+
+---
+
+🕵️ Example: The Fake-Dead Function
+
+One of the most important demo cases is:
+
 def track_user_event(event_type, user_id):
-    """Is this used? Safe to delete? Nobody knows..."""
     print(f"Event: {event_type} for user {user_id}")
-```
 
-### After: Necro's Verdict
+At first glance, the function appears unused.
 
-```
-Verdict: Secretly Load-Bearing
-Confidence: High
+Necro's evidence shows that it is connected through the repository's dispatch mechanism.
+
+The dashboard exposes evidence such as:
+
+Verdict:
+Secretly Load-Bearing
+
+Confidence:
+High
 
 Evidence:
-✓ Called via string-based dispatch in router.py:42
-✓ Referenced in config/routes.json as "user_action" handler
-✓ No direct imports, but dynamically loaded at runtime
+• router.py maps a handler to analytics.track_user_event
+• routes.json references the same handler
+• runtime dispatch uses dynamic loading
 
-Artifact Generated: ADR explaining indirect usage + enhanced docstring
-```
+This is the core problem Necro is designed to surface.
 
----
-
-## Key Features
-
-### 🔍 Deep Code Analysis
-- Full-repository context reasoning via Bob 2.0
-- Detects indirect usage patterns (config-driven, reflection, string dispatch)
-- Goes beyond simple static analysis
-
-### 📊 Evidence-Based Verdicts
-- Every classification backed by specific code references
-- Confidence levels (High/Medium/Low)
-- Complete reasoning trace captured
-
-### 🛠️ Actionable Artifacts
-- **Deletion patches** with safety notes
-- **Auto-generated documentation** for undocumented code
-- **ADR snippets** explaining load-bearing dependencies
-
-### 📈 Interactive Dashboard
-- Clean, single-page results view
-- Expandable evidence details
-- Downloadable artifacts
-- Color-coded verdicts
 
 ---
 
-## Quick Start
+🛠️ Actionable Artifacts
 
-### Installation
+For the verified Bob 2.0 demo, Necro can produce artifacts associated with the analysis, including:
 
-```bash
-# Clone and setup
-git clone <your-repo-url>
-cd necro_bob
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+deletion patches
 
-# Configure Bob 2.0 access
-cp .env.example .env
-# Edit .env with your Bob API credentials
-```
+architecture decision records
 
-### Run Analysis
+documentation artifacts
 
-```bash
-# 1. Seed demo repository
-python scripts/seed_demo_repo.py
 
-# 2. Run classification pipeline
-python scripts/run_pipeline.py
+These are surfaced directly from the dashboard so the user can inspect the evidence and proposed action.
 
-# 3. View results
-python scripts/serve_dashboard.py
-# Opens http://localhost:8000
-```
+The project deliberately separates analysis from action:
 
-**See [QUICKSTART.md](QUICKSTART.md) for detailed instructions.**
+Code
+  ↓
+Analysis
+  ↓
+Evidence
+  ↓
+Verdict
+  ↓
+Artifact
+
 
 ---
 
-## How It Works
+📊 Interactive Dashboard
 
-```mermaid
-graph LR
-    A[Legacy Code] --> B[Bob 2.0 Analysis]
-    B --> C{Verdict}
-    C -->|Safe to Delete| D[Deletion Patch]
-    C -->|Load-Bearing| E[ADR + Docs]
-    C -->|Undocumented| F[Documentation]
-    C -->|Normal| G[No Action]
-    D --> H[Dashboard]
-    E --> H
-    F --> H
-    G --> H
-```
+The dashboard provides:
 
-1. **Ingest:** Load target codebase into Bob's full-repo context
-2. **Classify:** Bob analyzes each module with evidence-based reasoning
-3. **Generate:** Create appropriate artifacts (patches, docs, ADRs)
-4. **Present:** Interactive dashboard with all results and evidence
+repository upload
 
-**See [ARCHITECTURE.md](ARCHITECTURE.md) for technical details.**
+verified demo mode
 
----
+analysis summary
 
-## Demo Repository Test Cases
+verdict filtering
 
-Necro includes 5 carefully seeded test cases:
+module search
 
-| Case | Type | Challenge |
-|------|------|-----------|
-| 1 | Genuinely Dead #1 | No references anywhere |
-| 2 | Genuinely Dead #2 | Leftover from removed feature |
-| 3 | **Fake-Dead** | Called via string-based dispatch (static analysis misses it) |
-| 4 | Undocumented | Used but zero docs/comments |
-| 5 | Control | Normal, well-used function (proves system doesn't flag everything) |
+evidence inspection
 
----
+source-code context
 
-## Example Results
+reasoning
 
-### Safe to Delete
+artifact downloads
 
-```json
-{
-  "module": "legacy_feature.calculate_legacy_metrics",
-  "verdict": "Safe to Delete",
-  "confidence": "High",
-  "evidence": [
-    "No direct references in codebase",
-    "Not imported in any file",
-    "No string-based references in config files"
-  ],
-  "artifact": "deletion.patch"
-}
-```
+static-analysis disclosure for uploaded repositories
 
-### Secretly Load-Bearing
 
-```json
-{
-  "module": "analytics.track_user_event",
-  "verdict": "Secretly Load-Bearing",
-  "confidence": "High",
-  "evidence": [
-    "Called via string dispatch in router.py:42",
-    "Referenced in config/routes.json",
-    "Dynamically loaded at runtime"
-  ],
-  "artifact": "adr_snippet.md + enhanced_docstring.py"
-}
-```
+The interface separates two sources of analysis:
+
+✓ Bob 2.0 Verified Demo
+
+The controlled demonstration backed by the project's Bob 2.0 workflow.
+
+⚠ Static Inspection
+
+User-uploaded repositories analyzed using Necro's local static-analysis engine.
+
+This distinction is intentionally visible so the application does not imply that arbitrary uploaded repositories were analyzed by Bob.
+
 
 ---
 
-## Business Value
+📦 Analyze Your Own Repository
 
-### Time Saved
-- **Manual code archaeology:** 2-4 hours per module
-- **With Necro:** 2-5 minutes per module
-- **ROI:** 95%+ time reduction
+Necro supports a repository-upload MVP.
 
-### Risk Avoided
-- Prevents production breakage from deleting load-bearing code
-- Enables confident legacy code cleanup
-- Reduces technical debt safely
+Upload a repository as a .zip file and the application performs static inspection without executing the uploaded code.
 
-### Quantifiable Impact
-- **5 modules analyzed** in demo
-- **2 safe deletions** identified (reduce codebase size)
-- **1 critical dependency** documented (prevent breakage)
-- **1 module** documented (improve maintainability)
+The upload pipeline includes protections against:
 
----
+ZIP path traversal
 
-## Technology Stack
+absolute paths
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| AI Reasoning | IBM Bob 2.0 | Full-repository code analysis |
-| Backend | Python 3.10+ | Classification pipeline |
-| Storage | JSON files | Results and evidence |
-| Frontend | HTML/CSS/JS | Interactive dashboard |
-| Server | Python http.server | Local demo serving |
+unsafe archive entries
+
+excessive file counts
+
+excessive uncompressed size
+
+oversized uploads
+
+
+Uploaded repositories are never imported, executed, or evaluated.
+
 
 ---
 
-## Project Structure
+🔬 Static Inspection Mode
 
-```
-necro_bob/
-├── README.md                   # This file
-├── IMPLEMENTATION_PLAN.md      # Detailed build strategy
-├── ARCHITECTURE.md             # System design
-├── QUICKSTART.md              # Setup guide
-├── requirements.txt           # Python dependencies
-├── .env.example              # Environment template
+The upload pipeline currently performs conservative static analysis.
+
+For Python repositories, Necro uses AST-based inspection.
+
+For other supported languages, it can use static/regex-based reference detection where applicable.
+
+The inspector looks for signals including:
+
+function definitions
+
+class definitions
+
+direct references
+
+calls
+
+docstrings
+
+configuration references
+
+quoted string references
+
+dynamic-dispatch patterns
+
+
+Important limitation
+
+Static analysis cannot guarantee that a function is unused.
+
+Runtime-only behavior, reflection, external consumers, generated code, and other dynamic mechanisms may not be visible to the inspector.
+
+For that reason, uploaded-repository confidence is intentionally capped at Medium.
+
+
+---
+
+🏗️ Architecture
+
+flowchart TD
+    A[Repository] --> B{Analysis Mode}
+
+    B -->|Verified Demo| C[IBM Bob 2.0 Workflow]
+    B -->|Uploaded ZIP| D[Static Repository Inspector]
+
+    C --> E[Classification]
+    D --> E
+
+    E --> F{Verdict}
+
+    F -->|Safe to Delete| G[Deletion Artifact]
+    F -->|Secretly Load-Bearing| H[ADR / Documentation]
+    F -->|Undocumented| I[Documentation Artifact]
+    F -->|Normal| J[No Action]
+
+    G --> K[Dashboard]
+    H --> K
+    I --> K
+    J --> K
+
+    K --> L[Evidence]
+    K --> M[Artifacts]
+
+
+---
+
+🧩 How It Works
+
+1. Ingest
+
+For the verified demo, the repository is prepared as a controlled analysis target.
+
+For uploaded repositories, Necro safely extracts the ZIP into a temporary workspace.
+
+2. Analyze
+
+Bob 2.0 mode
+
+The demonstration workflow uses Bob 2.0's repository-level reasoning to investigate code relationships.
+
+Static mode
+
+Uploaded repositories are analyzed without executing their code.
+
+3. Classify
+
+Necro assigns one of four verdicts based on the available evidence.
+
+4. Capture Evidence
+
+Relevant references, configuration relationships, source context, and reasoning are surfaced in the dashboard.
+
+5. Generate Artifacts
+
+Where supported by the verified analysis workflow, Necro generates actionable artifacts such as deletion patches, documentation, and ADRs.
+
+6. Present
+
+The dashboard turns the analysis into an explorable investigation rather than a raw JSON report.
+
+
+---
+
+🧰 Technology Stack
+
+Layer	Technology	Purpose
+
+AI reasoning	IBM Bob 2.0	Repository-level reasoning for the verified demo
+Backend	Python	Analysis pipeline and HTTP server
+Static analysis	Python AST + static heuristics	Uploaded repository inspection
+Storage	JSON / filesystem	Results, evidence, artifacts
+Frontend	HTML / CSS / JavaScript	Interactive dashboard
+Deployment	Render	Public demo deployment
+Source control	GitHub	Project repository
+
+
+
+---
+
+📁 Project Structure
+
+Necro-Code-Archaeology/
 │
-├── demo_repo/                # Seeded test repository
+├── dashboard/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+│
+├── demo_repo/
 │   ├── src/
 │   │   ├── main.py
 │   │   ├── utils.py
@@ -251,143 +412,322 @@ necro_bob/
 │   └── config/
 │       └── routes.json
 │
-├── necro/                    # Core application
-│   ├── bob_wrapper.py       # Bob 2.0 integration
-│   ├── classifier.py        # Classification pipeline
+├── necro/
+│   ├── bob_wrapper.py
+│   ├── classifier.py
 │   ├── artifact_generator.py
 │   ├── evidence_logger.py
+│   ├── repo_inspector.py
+│   ├── upload_handler.py
 │   └── config.py
 │
-├── prompts/                 # Bob prompt templates
+├── prompts/
 │   ├── classify_module.txt
 │   ├── generate_deletion.txt
 │   ├── generate_docs.txt
 │   └── generate_adr.txt
 │
-├── results/                 # Output directory
-│   ├── results.json        # Structured results
-│   └── evidence/           # Bob session logs
+├── results/
+│   ├── results.json
+│   └── evidence/
 │
-├── artifacts/              # Generated artifacts
+├── artifacts/
 │   ├── deletions/
 │   ├── documentation/
 │   └── adrs/
 │
-├── dashboard/              # Web interface
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
+├── scripts/
+│   ├── run_pipeline.py
+│   ├── seed_demo_repo.py
+│   └── serve_dashboard.py
 │
-└── scripts/               # Utility scripts
-    ├── run_pipeline.py
-    ├── seed_demo_repo.py
-    └── serve_dashboard.py
-```
+├── test_upload_api.py
+├── test_upload_simple.py
+├── test_upload_comprehensive.py
+│
+├── QUICKSTART.md
+├── ARCHITECTURE.md
+├── IMPLEMENTATION_PLAN.md
+├── requirements.txt
+└── README.md
+
 
 ---
 
-## Roadmap
+⚡ Quick Start
 
-### ✅ MVP (Hackathon)
-- [x] Bob 2.0 integration
-- [x] 5 test case classifications
-- [x] Artifact generation (2+ types)
-- [x] Interactive dashboard
-- [x] Evidence logging
+Clone
 
-### 🚀 v2.0 (Post-Hackathon)
-- [ ] Real GitHub PR automation
-- [ ] CI/CD integration
-- [ ] Multi-repo support
-- [ ] Custom rule definitions
-- [ ] Historical tracking
-- [ ] Team collaboration features
+git clone https://github.com/Tuxhar01/Necro-Code-Archaeology.git
+cd Necro-Code-Archaeology
 
----
+Create an environment
 
-## Judging Criteria Alignment
+Windows
 
-### Technical Depth ⭐⭐⭐⭐⭐
-- Deep integration with Bob 2.0's full-repo reasoning
-- Every verdict backed by captured Bob session
-- Non-trivial use case (indirect usage detection)
+python -m venv venv
+venv\Scripts\activate
 
-### Presentation ⭐⭐⭐⭐⭐
-- Clean, functional dashboard
-- Clear demo flow (problem → verdict → artifact)
-- Professional documentation
+macOS / Linux
 
-### Business Value ⭐⭐⭐⭐⭐
-- Solves real pain point (legacy code fear)
-- Quantifiable impact (time saved, risk avoided)
-- Immediate practical utility
+python3 -m venv venv
+source venv/bin/activate
 
-### Originality ⭐⭐⭐⭐⭐
-- "Code archaeology" framing (not another RAG bot)
-- Novel application of Bob for legacy analysis
-- Unique artifact generation approach
+Install dependencies
 
----
+pip install -r requirements.txt
 
-## Demo Video Script
+Start the dashboard
 
-**[0:00-0:30] Problem Setup**
-- Show demo repo with mysterious functions
-- "Which is safe to delete? Which will break production?"
+python scripts/serve_dashboard.py
 
-**[0:30-1:30] Solution Demo**
-- Run Necro pipeline
-- Show Bob analyzing each module
-- Display dashboard with verdicts
+Open:
 
-**[1:30-2:30] Evidence & Artifacts**
-- Expand "secretly load-bearing" case
-- Show string-based dispatch Bob caught
-- Display generated artifacts
+http://localhost:8000
 
-**[2:30-3:00] Business Value**
-- Time saved, risk avoided
-- Enable confident legacy cleanup
+Explore the verified demo
+
+Choose:
+
+Explore Verified Demo
+
+Analyze your own repository
+
+Choose:
+
+Analyze Your Repository
+
+and upload a .zip repository.
+
+For the complete Bob 2.0 analysis workflow, see:
+
+QUICKSTART.md
+
+ARCHITECTURE.md
+
+IMPLEMENTATION_PLAN.md
+
+
 
 ---
 
-## Contributing
+🧪 Testing
 
-This is a hackathon project, but contributions are welcome!
+The repository includes tests for the repository-upload MVP.
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+The test suite covers areas including:
+
+demo regression
+
+successful ZIP upload
+
+invalid ZIP rejection
+
+ZIP path traversal protection
+
+oversized upload handling
+
+temporary extraction cleanup
+
+unrelated POST rejection
+
+demo switching
+
+
+Run the comprehensive upload test suite with:
+
+python test_upload_comprehensive.py
+
+The uploaded-repository analyzer is deliberately conservative and does not execute repository code during analysis.
+
 
 ---
 
-## License
+🔐 Security Model
 
-MIT License - see [LICENSE](LICENSE) for details
+Uploaded repositories are treated as untrusted input.
+
+Necro:
+
+does not execute uploaded source code
+
+does not import uploaded modules
+
+does not evaluate uploaded expressions
+
+does not install uploaded dependencies
+
+validates archive paths
+
+limits upload size
+
+limits extracted size
+
+limits file count
+
+cleans temporary extraction directories
+
+
+Static inspection is performed against extracted source/configuration files only.
+
 
 ---
 
-## Acknowledgments
+📌 Current Limitations
 
-- **IBM Bob 2.0** for full-repository AI reasoning
-- **IBM Bob 2.0 Hackathon** for the opportunity
-- All developers who've ever inherited scary legacy code
+Necro is currently a hackathon MVP.
+
+Uploaded repositories
+
+Uploaded repositories use static inspection rather than live Bob 2.0 reasoning.
+
+Dynamic behavior
+
+Static analysis may miss:
+
+reflection
+
+runtime-generated references
+
+external consumers
+
+generated code
+
+behavior dependent on external systems
+
+
+Analysis scope
+
+The repository-upload MVP limits the number of analyzed candidates to keep analysis bounded.
+
+GitHub automation
+
+Necro currently does not automatically create GitHub pull requests.
+
+Generated patches and artifacts are available for inspection/download instead.
+
 
 ---
 
-## Contact
+🗺️ Roadmap
 
-- **Author:** [Your Name]
-- **Hackathon:** IBM Bob 2.0 (Sep 25-27, 2026)
-- **GitHub:** <your-repo-url>
+Current MVP
+
+[x] IBM Bob 2.0 analysis workflow
+
+[x] Evidence-backed classifications
+
+[x] Five-case demonstration repository
+
+[x] Artifact generation
+
+[x] Interactive dashboard
+
+[x] Repository ZIP upload
+
+[x] Static repository inspection
+
+[x] Upload security controls
+
+[x] Demo/live deployment
+
+
+Future
+
+[ ] Direct GitHub repository integration
+
+[ ] GitHub PR creation
+
+[ ] CI/CD integration
+
+[ ] Multi-repository analysis
+
+[ ] Historical analysis and code-debt tracking
+
+[ ] Custom classification rules
+
+[ ] Team collaboration
+
+[ ] Live Bob 2.0 analysis for connected repositories
+
+
 
 ---
 
-<div align="center">
+🏆 Why Necro?
 
-**🏺 Necro - Because every codebase deserves an archaeologist 🏺**
+Legacy code isn't necessarily dead code.
 
-*Built with IBM Bob 2.0 for the IBM Bob 2.0 Hackathon*
+A function with no obvious import can still be part of:
+
+Configuration
+      ↓
+String Dispatch
+      ↓
+Dynamic Loading
+      ↓
+Runtime Behavior
+
+Necro's goal is to make those relationships visible before somebody reaches for git rm.
+
+> Don't delete what you don't understand. Unearth it first.
+
+
+
+
+---
+
+🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository.
+
+
+2. Create a feature branch.
+
+
+3. Make your changes.
+
+
+4. Add or update tests.
+
+
+5. Submit a pull request.
+
+
+
+
+---
+
+📄 License
+
+MIT License.
+
+See LICENSE for details.
+
+
+---
+
+🙏 Acknowledgments
+
+IBM Bob 2.0 — for the repository-level reasoning workflow demonstrated by Necro
+
+IBM Bob 2.0 Hackathon — for the opportunity to build and explore this concept
+
+Every developer who has inherited a codebase containing a function nobody remembers writing
+
+
+
+---
+
+<div align="center">🏺 Necro — Code Archaeology
+
+Find dead code. Detect hidden dependencies. Preserve what matters.
+
+Built with IBM Bob 2.0 for the IBM Bob 2.0 Hackathon 2026.
+
+Live Demo · GitHub
 
 </div>
+```
