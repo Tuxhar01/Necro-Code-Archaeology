@@ -1,0 +1,25 @@
+--- a/demo_repo/src/legacy_feature.py
++++ b/demo_repo/src/legacy_feature.py
+@@ -8,9 +8,0 @@
+-def calculate_legacy_metrics(data):
+-    """
+-    Old metrics calculation - replaced by new system.
+-    This function computed simple averages for the v1.0 dashboard.
+-    No longer used anywhere in the codebase.
+-    """
+-    if not data or len(data) == 0:
+-        return 0
+-    return sum(data) / len(data)
+
+SAFETY NOTE:
+This deletion is safe because comprehensive codebase search found:
+- Zero imports of calculate_legacy_metrics in any Python file
+- No string references in router.py HANDLERS dictionary
+- No configuration references in routes.json
+- Function only exists in its definition at legacy_feature.py line 8
+
+REGRESSION TESTING:
+- Run existing test suite to verify no hidden dependencies
+- Search for any string-based function lookups that might reference this
+- Verify no reflection-based code dynamically calls this function
+- Check if any documentation references this function and update accordingly

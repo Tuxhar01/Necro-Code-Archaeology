@@ -1,0 +1,30 @@
+{
+  "session_id": "bob_session_1790453508_track_user_event",
+  "timestamp": "2026-09-27T01:41:48.198909",
+  "mode": "chat",
+  "module_name": "track_user_event",
+  "module_path": "demo_repo/src/analytics.py",
+  "classification": {
+    "module_name": "track_user_event",
+    "module_path": "demo_repo/src/analytics.py",
+    "verdict": "Secretly Load-Bearing",
+    "confidence": "High",
+    "evidence": [
+      "No direct imports found, but router.py line 11 maps 'user_event' to 'analytics.track_user_event' in HANDLERS dict, dynamically imported via importlib at line 31. Additionally, routes.json lines 3, 14, 18, 22 reference 'analytics.track_user_event' as handler for multiple event types."
+    ],
+    "reasoning": "No direct imports found, but router.py line 11 maps 'user_event' to 'analytics.track_user_event' in HANDLERS dict, dynamically imported via importlib at line 31. Additionally, routes.json lines 3, 14, 18, 22 reference 'analytics.track_user_event' as handler for multiple event types.",
+    "timestamp": "2026-09-27T01:41:48.198909",
+    "bob_session_id": "bob_session_1790453508_track_user_event",
+    "artifact_path": "",
+    "evidence_path": ""
+  },
+  "prompt": "Classification prompt for track_user_event",
+  "raw_response": {
+    "verdict": "Secretly Load-Bearing",
+    "confidence": "High",
+    "evidence": [
+      "No direct imports found, but router.py line 11 maps 'user_event' to 'analytics.track_user_event' in HANDLERS dict, dynamically imported via importlib at line 31. Additionally, routes.json lines 3, 14, 18, 22 reference 'analytics.track_user_event' as handler for multiple event types."
+    ],
+    "reasoning": "No direct imports found, but router.py line 11 maps 'user_event' to 'analytics.track_user_event' in HANDLERS dict, dynamically imported via importlib at line 31. Additionally, routes.json lines 3, 14, 18, 22 reference 'analytics.track_user_event' as handler for multiple event types."
+  }
+}

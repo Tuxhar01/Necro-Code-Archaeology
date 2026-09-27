@@ -1,0 +1,29 @@
+--- a/demo_repo/src/utils.py
++++ b/demo_repo/src/utils.py
+@@ -17,13 +17,0 @@
+-def format_old_date(timestamp):
+-    """
+-    CASE 2: Genuinely Dead Function #2
+-    Date formatter from v1.0 - no longer used.
+-    This was replaced by the new datetime handling system.
+-    Different pattern: leftover from removed feature.
+-    """
+-    from datetime import datetime
+-    if isinstance(timestamp, str):
+-        dt = datetime.fromisoformat(timestamp)
+-    else:
+-        dt = timestamp
+-    return dt.strftime("%d/%m/%Y")
+
+SAFETY NOTE:
+This deletion is safe because:
+- Function defined at utils.py line 17 but never imported elsewhere
+- No calls to format_old_date found in any Python file
+- Not referenced in router.py dispatch system or routes.json config
+- Docstring explicitly states it's from deprecated v1.0 system
+
+REGRESSION TESTING:
+- Verify no date formatting tests rely on this function
+- Check if any legacy data migration scripts use this
+- Confirm new datetime handling covers all use cases
+- Review git history to ensure no recent additions reference this

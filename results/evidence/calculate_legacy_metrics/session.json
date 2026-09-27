@@ -1,0 +1,30 @@
+{
+  "session_id": "bob_session_1790453508_calculate_legacy_metrics",
+  "timestamp": "2026-09-27T01:41:48.195904",
+  "mode": "chat",
+  "module_name": "calculate_legacy_metrics",
+  "module_path": "demo_repo/src/legacy_feature.py",
+  "classification": {
+    "module_name": "calculate_legacy_metrics",
+    "module_path": "demo_repo/src/legacy_feature.py",
+    "verdict": "Safe to Delete",
+    "confidence": "High",
+    "evidence": [
+      "Searched entire demo_repo codebase - function defined only in legacy_feature.py line 8, zero imports or calls found in any .py file, no string references in router.py HANDLERS dict (lines 10-14) or routes.json config."
+    ],
+    "reasoning": "Searched entire demo_repo codebase - function defined only in legacy_feature.py line 8, zero imports or calls found in any .py file, no string references in router.py HANDLERS dict (lines 10-14) or routes.json config.",
+    "timestamp": "2026-09-27T01:41:48.195904",
+    "bob_session_id": "bob_session_1790453508_calculate_legacy_metrics",
+    "artifact_path": "",
+    "evidence_path": ""
+  },
+  "prompt": "Classification prompt for calculate_legacy_metrics",
+  "raw_response": {
+    "verdict": "Safe to Delete",
+    "confidence": "High",
+    "evidence": [
+      "Searched entire demo_repo codebase - function defined only in legacy_feature.py line 8, zero imports or calls found in any .py file, no string references in router.py HANDLERS dict (lines 10-14) or routes.json config."
+    ],
+    "reasoning": "Searched entire demo_repo codebase - function defined only in legacy_feature.py line 8, zero imports or calls found in any .py file, no string references in router.py HANDLERS dict (lines 10-14) or routes.json config."
+  }
+}

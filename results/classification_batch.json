@@ -1,0 +1,32 @@
+[
+  {
+    "item": "calculate_legacy_metrics",
+    "verdict": "Safe to Delete",
+    "confidence": "High",
+    "evidence": "Searched entire demo_repo codebase - function defined only in legacy_feature.py line 8, zero imports or calls found in any .py file, no string references in router.py HANDLERS dict (lines 10-14) or routes.json config."
+  },
+  {
+    "item": "format_old_date",
+    "verdict": "Safe to Delete",
+    "confidence": "High",
+    "evidence": "Function defined in utils.py line 17, searched all Python files - no imports, no calls, not referenced in router.py dispatch system or routes.json configuration."
+  },
+  {
+    "item": "track_user_event",
+    "verdict": "Secretly Load-Bearing",
+    "confidence": "High",
+    "evidence": "No direct imports found, but router.py line 11 maps 'user_event' to 'analytics.track_user_event' in HANDLERS dict, dynamically imported via importlib at line 31. Additionally, routes.json lines 3, 14, 18, 22 reference 'analytics.track_user_event' as handler for multiple event types."
+  },
+  {
+    "item": "validate_input",
+    "verdict": "Undocumented but Valuable",
+    "confidence": "High",
+    "evidence": "Function in utils.py line 7 has zero docstring or comments (lines 8-9 note this explicitly), but main.py line 6 imports it and line 19 calls it directly in process_request() - critical validation logic with no documentation."
+  },
+  {
+    "item": "process_request",
+    "verdict": "Normal - No Action",
+    "confidence": "High",
+    "evidence": "Function in main.py line 9 has comprehensive docstring (lines 10-18) documenting args and return value, called in __main__ block at line 58, properly documented and actively used - no issues detected."
+  }
+]
