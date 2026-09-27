@@ -721,13 +721,14 @@ Every developer who has inherited a codebase containing a function nobody rememb
 
 ---
 
-<div align="center">🏺 Necro — Code Archaeology
+<div align="center">
 
-Find dead code. Detect hidden dependencies. Preserve what matters.
+## 🏺 Necro — Code Archaeology
 
-Built with IBM Bob 2.0 for the IBM Bob 2.0 Hackathon 2026.
+**Find dead code. Detect hidden dependencies. Preserve what matters.**
 
-Live Demo · GitHub
+Built with **IBM Bob 2.0** for the **IBM Bob 2.0 Hackathon 2026**.
+
+[Live Demo](https://necro-code-archaeology.onrender.com) · [GitHub](https://github.com/Tuxhar01/Necro-Code-Archaeology)
 
 </div>
-```
