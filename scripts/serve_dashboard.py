@@ -15,7 +15,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from necro.config import config
 
 
-PORT = 8000
+import os
+
+PORT = int(os.environ.get("PORT", 8000))
 PROJECT_ROOT = config.PROJECT_ROOT
 
 
