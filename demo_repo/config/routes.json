@@ -1,0 +1,26 @@
+{
+  "event_handlers": {
+    "user_action": "analytics.track_user_event",
+    "performance": "analytics.log_system_metric",
+    "exception": "analytics.record_error"
+  },
+  "routing_config": {
+    "enable_analytics": true,
+    "enable_metrics": true,
+    "enable_error_tracking": true
+  },
+  "handler_mappings": {
+    "login": {
+      "handler": "analytics.track_user_event",
+      "event_type": "user_login"
+    },
+    "logout": {
+      "handler": "analytics.track_user_event",
+      "event_type": "user_logout"
+    },
+    "page_view": {
+      "handler": "analytics.track_user_event",
+      "event_type": "page_view"
+    }
+  }
+}

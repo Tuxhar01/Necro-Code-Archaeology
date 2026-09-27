@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Necro - Code Archaeology Results</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🏺 Necro - Code Archaeology Results</h1>
+            <p class="subtitle">AI-Powered Legacy Code Analysis with IBM Bob 2.0</p>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Summary Section -->
+            <section class="summary-section">
+                <h2>Analysis Summary</h2>
+                <div class="summary-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Modules Analyzed</div>
+                        <div class="stat-value" id="total-modules">-</div>
+                    </div>
+                    <div class="stat-card delete">
+                        <div class="stat-label">Safe to Delete</div>
+                        <div class="stat-value" id="delete-count">-</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">Load-Bearing</div>
+                        <div class="stat-value" id="warning-count">-</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-label">Needs Docs</div>
+                        <div class="stat-value" id="docs-count">-</div>
+                    </div>
+                    <div class="stat-card normal">
+                        <div class="stat-label">Normal</div>
+                        <div class="stat-value" id="normal-count">-</div>
+                    </div>
+                </div>
+                <div class="metadata">
+                    <span id="generated-time">Loading...</span>
+                    <span id="bob-mode"></span>
+                </div>
+            </section>
+            
+            <!-- Results Table -->
+            <section class="results-section">
+                <h2>Classification Results</h2>
+                <div class="table-container">
+                    <table id="results-table">
+                        <thead>
+                            <tr>
+                                <th>Module</th>
+                                <th>Verdict</th>
+                                <th>Confidence</th>
+                                <th>Evidence</th>
+                                <th>Artifact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-body">
+                            <tr>
+                                <td colspan="5" class="loading">Loading results...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Error Display -->
+            <div id="error-message" class="error-message" style="display: none;">
+                <strong>Error loading results:</strong>
+                <p id="error-text"></p>
+                <p class="error-help">Make sure you've run <code>python scripts/run_pipeline.py</code> first.</p>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Praxis · Built with IBM Bob 2.0 · IBM Bob 2.0 Hackathon 2026</p>
+    </footer>
+    
+    <!-- Modal for Evidence Details -->
+    <div id="evidence-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Evidence Details</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
