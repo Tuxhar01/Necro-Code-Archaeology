@@ -2,6 +2,9 @@
 
 // State
 let resultsData = null;
+let currentMode = 'demo'; // 'demo' or 'upload'
+let uploadedFile = null;
+let allResults = []; // Store all results for filtering
 
 // Source code mapping for before/after comparison
 const SOURCE_CODE = {
@@ -60,10 +63,10 @@ const SOURCE_CODE = {
         code: `def process_request(request_data):
     """
     Main request processor - handles incoming requests.
-    
+
     Args:
         request_data: Dictionary containing request information
-        
+
     Returns:
         dict: Processed response with status and data
     """
@@ -72,7 +75,7 @@ const SOURCE_CODE = {
             "status": "error",
             "message": "Invalid request data"
         }
-    
+
     return {
         "status": "success",
         "data": request_data,
@@ -83,22 +86,66 @@ const SOURCE_CODE = {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    loadResults();
     setupModal();
+    setupUploadHandlers();
+    setupViewSwitching();
+    setupFiltering();
+    loadResults();
 });
+
+// View Switching
+function setupViewSwitching() {
+    const navAnalyze = document.getElementById('nav-analyze');
+    const navDashboard = document.getElementById('nav-dashboard');
+    const backToAnalyze = document.getElementById('back-to-analyze');
+
+    navAnalyze.addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('analyze');
+    });
+
+    navDashboard.addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('dashboard');
+    });
+
+    backToAnalyze.addEventListener('click', () => {
+        showView('analyze');
+    });
+}
+
+function showView(viewName) {
+    const views = document.querySelectorAll('.view');
+    views.forEach(view => view.classList.remove('active'));
+
+    const targetView = document.getElementById(`view-${viewName}`);
+    if (targetView) {
+        targetView.classList.add('active');
+    }
+
+    // Update nav links
+    const navDashboard = document.getElementById('nav-dashboard');
+    if (viewName === 'dashboard' && resultsData) {
+        navDashboard.style.display = 'block';
+    }
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
 
 // Load results from JSON file
 async function loadResults() {
     try {
         const response = await fetch('../results/results.json');
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         resultsData = await response.json();
+        allResults = [...resultsData.results];
         renderDashboard();
-        
+
     } catch (error) {
         showError(error.message);
     }
@@ -107,15 +154,26 @@ async function loadResults() {
 // Render the entire dashboard
 function renderDashboard() {
     if (!resultsData) return;
-    
+
     renderSummary();
     renderResultsTable();
+    updateAnalysisSource();
+}
+
+// Update analysis source indicator
+function updateAnalysisSource() {
+    const sourceDiv = document.getElementById('analysis-source');
+    if (currentMode === 'demo') {
+        sourceDiv.innerHTML = '<span class="badge badge-verified">✓ Bob 2.0 Verified Demo</span>';
+    } else {
+        sourceDiv.innerHTML = '<span class="badge badge-static">⚠ Static Inspection — Not Analyzed by Bob</span>';
+    }
 }
 
 // Render summary statistics
 function renderSummary() {
     const results = resultsData.results;
-    
+
     // Count verdicts - dynamically derive counts from actual data
     const verdictCounts = {
         'Safe to Delete': 0,
@@ -124,7 +182,7 @@ function renderSummary() {
         'Normal': 0,
         'Error': 0
     };
-    
+
     results.forEach(result => {
         // Handle both "Normal" and "Normal - No Action" verdicts
         if (result.verdict.startsWith('Normal')) {
@@ -133,26 +191,32 @@ function renderSummary() {
             verdictCounts[result.verdict]++;
         }
     });
-    
+
     // Update DOM
     document.getElementById('total-modules').textContent = resultsData.modules_analyzed;
     document.getElementById('delete-count').textContent = verdictCounts['Safe to Delete'];
     document.getElementById('warning-count').textContent = verdictCounts['Secretly Load-Bearing'];
     document.getElementById('docs-count').textContent = verdictCounts['Undocumented but Valuable'];
     document.getElementById('normal-count').textContent = verdictCounts['Normal'];
-    
+
     // Update metadata
     const generatedTime = new Date(resultsData.generated_at).toLocaleString();
     document.getElementById('generated-time').textContent = `Generated: ${generatedTime}`;
-    document.getElementById('bob-mode').textContent = `Mode: ${resultsData.bob_mode || 'N/A'}`;
 }
 
 // Render results table
-function renderResultsTable() {
+function renderResultsTable(filteredResults = null) {
     const tbody = document.getElementById('results-body');
     tbody.innerHTML = '';
-    
-    resultsData.results.forEach((result, index) => {
+
+    const resultsToRender = filteredResults || resultsData.results;
+
+    if (resultsToRender.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-results">No results match your filters</td></tr>';
+        return;
+    }
+
+    resultsToRender.forEach((result, index) => {
         const row = createResultRow(result, index);
         tbody.appendChild(row);
     });
@@ -161,7 +225,7 @@ function renderResultsTable() {
 // Create a table row for a result
 function createResultRow(result, index) {
     const row = document.createElement('tr');
-    
+
     // Module name
     const moduleCell = document.createElement('td');
     moduleCell.innerHTML = `
@@ -169,26 +233,26 @@ function createResultRow(result, index) {
         <small style="color: #666;">${result.module_path}</small>
     `;
     row.appendChild(moduleCell);
-    
+
     // Verdict
     const verdictCell = document.createElement('td');
     verdictCell.innerHTML = `<span class="verdict-badge ${getVerdictClass(result.verdict)}">${result.verdict}</span>`;
     row.appendChild(verdictCell);
-    
+
     // Confidence
     const confidenceCell = document.createElement('td');
     confidenceCell.innerHTML = `<span class="confidence-badge ${getConfidenceClass(result.confidence)}">${result.confidence}</span>`;
     row.appendChild(confidenceCell);
-    
+
     // Evidence
     const evidenceCell = document.createElement('td');
     evidenceCell.innerHTML = `
         <span class="evidence-toggle" onclick="showEvidence(${index})">
-            View ${result.evidence.length} items
+            View Evidence
         </span>
     `;
     row.appendChild(evidenceCell);
-    
+
     // Artifact
     const artifactCell = document.createElement('td');
     if (result.artifact_path) {
@@ -201,7 +265,7 @@ function createResultRow(result, index) {
         artifactCell.innerHTML = '<span style="color: #999;">None</span>';
     }
     row.appendChild(artifactCell);
-    
+
     return row;
 }
 
@@ -233,9 +297,14 @@ function showEvidence(index) {
     const modal = document.getElementById('evidence-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalBody = document.getElementById('modal-body');
-    
-    modalTitle.textContent = `Evidence: ${result.module_name}`;
-    
+
+    // Update title based on mode
+    if (currentMode === 'upload') {
+        modalTitle.textContent = `Static Analysis: ${result.module_name}`;
+    } else {
+        modalTitle.textContent = `Evidence: ${result.module_name}`;
+    }
+
     // Get verdict class for styling
     const verdictClass = getVerdictClass(result.verdict);
     const verdictColorMap = {
@@ -246,7 +315,7 @@ function showEvidence(index) {
         'verdict-error': 'var(--color-error)'
     };
     const verdictColor = verdictColorMap[verdictClass] || 'var(--color-primary)';
-    
+
     let html = `
         <div class="modal-verdict-header" style="border-left-color: ${verdictColor}">
             <h3>
@@ -261,7 +330,7 @@ function showEvidence(index) {
             </p>
         </div>
     `;
-    
+
     // Add Before/After comparison if source code is available
     const sourceInfo = SOURCE_CODE[result.module_name];
     if (sourceInfo) {
@@ -295,25 +364,25 @@ function showEvidence(index) {
             </div>
         `;
     }
-    
+
     // Evidence section with highlighted file citations
     html += `
         <div class="evidence-detail">
             <h3>🔍 Evidence Trail</h3>
             <ul class="evidence-list">
     `;
-    
+
     result.evidence.forEach(item => {
         // Highlight file:line patterns in evidence
         const highlightedItem = highlightFileCitations(escapeHtml(item));
         html += `<li class="evidence-item">${highlightedItem}</li>`;
     });
-    
+
     html += `
             </ul>
         </div>
     `;
-    
+
     if (result.evidence_path) {
         html += `
             <div class="evidence-detail">
@@ -322,7 +391,7 @@ function showEvidence(index) {
             </div>
         `;
     }
-    
+
     if (result.artifact_path) {
         html += `
             <div class="evidence-detail">
@@ -335,15 +404,15 @@ function showEvidence(index) {
             </div>
         `;
     }
-    
-    
+
+
     modalBody.innerHTML = html;
-    
+
     // Apply syntax highlighting to code blocks
     modalBody.querySelectorAll('pre code').forEach((block) => {
         hljs.highlightElement(block);
     });
-    
+
     modal.style.display = 'flex';
 }
 
@@ -359,11 +428,11 @@ function highlightFileCitations(text) {
 function setupModal() {
     const modal = document.getElementById('evidence-modal');
     const closeBtn = modal.querySelector('.close');
-    
+
     closeBtn.onclick = () => {
         modal.style.display = 'none';
     };
-    
+
     window.onclick = (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
@@ -376,11 +445,11 @@ function showError(message) {
     const errorDiv = document.getElementById('error-message');
     const errorText = document.getElementById('error-text');
     const resultsTable = document.getElementById('results-table');
-    
+
     errorText.textContent = message;
     errorDiv.style.display = 'block';
     resultsTable.style.display = 'none';
-    
+
     // Hide summary stats
     document.getElementById('total-modules').textContent = '0';
     document.getElementById('delete-count').textContent = '0';
@@ -394,6 +463,210 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Upload Handlers
+function setupUploadHandlers() {
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const demoBtn = document.getElementById('demo-btn');
+
+    // Click to browse
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // File selection
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+
+        if (e.dataTransfer.files.length > 0) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+
+    // Analyze button
+    analyzeBtn.addEventListener('click', () => {
+        if (uploadedFile) {
+            analyzeUpload();
+        }
+    });
+
+    // Demo button
+    demoBtn.addEventListener('click', () => {
+        loadDemoResults();
+    });
+}
+
+function handleFileSelect(file) {
+    const statusDiv = document.getElementById('upload-status');
+    const errorDiv = document.getElementById('upload-error');
+    const analyzeBtn = document.getElementById('analyze-btn');
+
+    // Clear previous messages
+    errorDiv.style.display = 'none';
+    statusDiv.style.display = 'none';
+
+    // Validate file
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+        showUploadError('Please select a ZIP file');
+        uploadedFile = null;
+        analyzeBtn.disabled = true;
+        return;
+    }
+
+    // Check size (20 MB)
+    const maxSize = 20 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showUploadError(`File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB (max 20 MB)`);
+        uploadedFile = null;
+        analyzeBtn.disabled = true;
+        return;
+    }
+
+    // File is valid
+    uploadedFile = file;
+    analyzeBtn.disabled = false;
+
+    statusDiv.textContent = `✓ Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    statusDiv.style.display = 'block';
+    statusDiv.style.color = '#4caf50';
+}
+
+async function analyzeUpload() {
+    const statusDiv = document.getElementById('upload-status');
+    const errorDiv = document.getElementById('upload-error');
+    const analyzeBtn = document.getElementById('analyze-btn');
+
+    if (!uploadedFile) return;
+
+    // Clear previous messages
+    errorDiv.style.display = 'none';
+
+    // Show loading state
+    analyzeBtn.disabled = true;
+    statusDiv.textContent = '⏳ Uploading and analyzing...';
+    statusDiv.style.display = 'block';
+    statusDiv.style.color = '#2196F3';
+
+    try {
+        // Create FormData
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+
+        // Upload and analyze
+        const response = await fetch('/api/analyze-upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        // Update state
+        currentMode = 'upload';
+        resultsData = {
+            generated_at: data.generated_at,
+            demo_repo: 'uploaded',
+            modules_analyzed: data.summary.modules_analyzed,
+            bob_mode: 'static_inspection',
+            results: data.results
+        };
+        allResults = [...resultsData.results];
+
+        // Render dashboard
+        renderDashboard();
+
+        // Show success
+        statusDiv.textContent = `✓ Analysis complete: ${data.summary.modules_analyzed} modules analyzed`;
+        statusDiv.style.color = '#4caf50';
+
+        // Switch to dashboard view
+        showView('dashboard');
+
+    } catch (error) {
+        showUploadError(`Analysis failed: ${error.message}`);
+        analyzeBtn.disabled = false;
+    }
+}
+
+function loadDemoResults() {
+    const statusDiv = document.getElementById('upload-status');
+    const errorDiv = document.getElementById('upload-error');
+
+    // Clear upload state
+    uploadedFile = null;
+    document.getElementById('file-input').value = '';
+    document.getElementById('analyze-btn').disabled = true;
+    statusDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+
+    // Load demo
+    currentMode = 'demo';
+    loadResults().then(() => {
+        showView('dashboard');
+    });
+}
+
+function showUploadError(message) {
+    const errorDiv = document.getElementById('upload-error');
+    errorDiv.textContent = `❌ ${message}`;
+    errorDiv.style.display = 'block';
+}
+
+// Filtering functionality
+function setupFiltering() {
+    const searchInput = document.getElementById('search-input');
+    const verdictFilter = document.getElementById('verdict-filter');
+
+    searchInput.addEventListener('input', applyFilters);
+    verdictFilter.addEventListener('change', applyFilters);
+}
+
+function applyFilters() {
+    if (!resultsData) return;
+
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const verdictFilter = document.getElementById('verdict-filter').value;
+
+    let filtered = allResults;
+
+    // Apply search filter
+    if (searchTerm) {
+        filtered = filtered.filter(result =>
+            result.module_name.toLowerCase().includes(searchTerm) ||
+            result.module_path.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Apply verdict filter
+    if (verdictFilter) {
+        filtered = filtered.filter(result => result.verdict === verdictFilter);
+    }
+
+    renderResultsTable(filtered);
 }
 
 // Made with Bob

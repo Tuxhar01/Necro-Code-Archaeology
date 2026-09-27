@@ -3,25 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Necro - Code Archaeology Results</title>
+    <title>Necro - Code Archaeology</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <h1>🏺 Necro - Code Archaeology Results</h1>
-            <p class="subtitle">AI-Powered Legacy Code Analysis with IBM Bob 2.0</p>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-brand">🏺 NECRO</div>
+            <div class="nav-links">
+                <a href="#" class="nav-link" id="nav-analyze">Analyze</a>
+                <a href="#" class="nav-link" id="nav-dashboard" style="display: none;">Dashboard</a>
+            </div>
         </div>
-    </header>
-    
-    <main>
-        <div class="container">
+    </nav>
+
+    <!-- VIEW 1: ANALYZE / HOME -->
+    <div id="view-analyze" class="view active">
+        <header class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">🏺 NECRO</h1>
+                <p class="hero-subtitle">Code Archaeology</p>
+                <p class="hero-tagline">Find dead code. Detect hidden dependencies. Preserve what matters.</p>
+            </div>
+        </header>
+
+        <main class="container">
+            <!-- Main Actions -->
+            <section class="actions-section">
+                <div class="action-card primary-action">
+                    <h2>Analyze Your Repository</h2>
+                    <p>Upload a ZIP file of your repository for static code analysis</p>
+
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📦</div>
+                        <p class="upload-text">
+                            <strong>Drop ZIP file here</strong> or click to browse
+                        </p>
+                        <input type="file" id="file-input" accept=".zip" style="display: none;">
+                        <p class="upload-hint">Maximum size: 20 MB</p>
+                    </div>
+
+                    <div id="upload-status" class="upload-status" style="display: none;"></div>
+                    <div id="upload-error" class="upload-error" style="display: none;"></div>
+
+                    <button id="analyze-btn" class="btn btn-primary btn-large" disabled>
+                        Analyze Repository
+                    </button>
+                </div>
+
+                <div class="action-card secondary-action">
+                    <h2>Explore Verified Demo</h2>
+                    <p>See Necro in action with our pre-analyzed demo repository</p>
+                    <button id="demo-btn" class="btn btn-secondary btn-large">
+                        Explore Verified Demo
+                    </button>
+                </div>
+            </section>
+
+            <!-- How It Works -->
+            <section class="how-it-works">
+                <h2>How It Works</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Upload</h3>
+                            <p>Provide your repository as a ZIP file</p>
+                        </div>
+                    </div>
+                    <div class="step-arrow">→</div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Analyze</h3>
+                            <p>Static inspection examines code structure</p>
+                        </div>
+                    </div>
+                    <div class="step-arrow">→</div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Evidence</h3>
+                            <p>Review detailed findings and reasoning</p>
+                        </div>
+                    </div>
+                    <div class="step-arrow">→</div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Action</h3>
+                            <p>Make informed decisions about your code</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Disclaimer -->
+            <section class="disclaimer-section">
+                <div class="disclaimer-box">
+                    <strong>⚠️ Important:</strong> Uploaded repositories are analyzed using static inspection only.
+                    Results are <strong>not verified by IBM Bob 2.0</strong> and may miss runtime behavior,
+                    reflection, external consumers, or dynamic code generation.
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- VIEW 2: ANALYSIS DASHBOARD -->
+    <div id="view-dashboard" class="view">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-title-section">
+                    <h1>Analysis Results</h1>
+                    <div id="analysis-source" class="analysis-source"></div>
+                </div>
+                <button id="back-to-analyze" class="btn btn-outline">
+                    ← Analyze Another Repository
+                </button>
+            </div>
+        </header>
+
+        <main class="container">
             <!-- Summary Section -->
             <section class="summary-section">
-                <h2>Analysis Summary</h2>
+                <h2>Summary</h2>
                 <div class="summary-grid">
                     <div class="stat-card">
                         <div class="stat-label">Modules Analyzed</div>
@@ -46,13 +155,24 @@
                 </div>
                 <div class="metadata">
                     <span id="generated-time">Loading...</span>
-                    <span id="bob-mode"></span>
                 </div>
             </section>
-            
+
             <!-- Results Table -->
             <section class="results-section">
-                <h2>Classification Results</h2>
+                <div class="results-header">
+                    <h2>Classification Results</h2>
+                    <div class="results-controls">
+                        <input type="text" id="search-input" class="search-input" placeholder="Search modules...">
+                        <select id="verdict-filter" class="verdict-filter">
+                            <option value="">All Verdicts</option>
+                            <option value="Safe to Delete">Safe to Delete</option>
+                            <option value="Secretly Load-Bearing">Load-Bearing</option>
+                            <option value="Undocumented but Valuable">Needs Docs</option>
+                            <option value="Normal">Normal</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table id="results-table">
                         <thead>
@@ -72,20 +192,20 @@
                     </table>
                 </div>
             </section>
-            
+
             <!-- Error Display -->
             <div id="error-message" class="error-message" style="display: none;">
                 <strong>Error loading results:</strong>
                 <p id="error-text"></p>
                 <p class="error-help">Make sure you've run <code>python scripts/run_pipeline.py</code> first.</p>
             </div>
-        </div>
-    </main>
-    
+        </main>
+    </div>
+
     <footer>
         <p>Praxis · Built with IBM Bob 2.0 · IBM Bob 2.0 Hackathon 2026</p>
     </footer>
-    
+
     <!-- Modal for Evidence Details -->
     <div id="evidence-modal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -94,7 +214,7 @@
             <div id="modal-body"></div>
         </div>
     </div>
-    
+
     <script src="app.js"></script>
 </body>
 </html>

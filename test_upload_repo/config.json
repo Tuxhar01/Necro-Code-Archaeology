@@ -1,0 +1,5 @@
+{
+  "handlers": {
+    "special_handler": "test_code.load_bearing_function"
+  }
+}
